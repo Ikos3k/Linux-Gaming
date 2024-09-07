@@ -6,7 +6,11 @@ TARGET_REFRESH_RATE=165
 
 GAME_PROCESS_NAME="cs2"
 APP_ID=730
-LAUNCH_OPTIONS="-novid -nojoy -high -console -w 1280 -h 960 -fullscreen +r_dynamic 0 +fps_max $TARGET_REFRESH_RATE"
+
+WIDTH=$(echo "$TARGET_RESOLUTION" | cut -d'x' -f1)
+HEIGHT=$(echo "$TARGET_RESOLUTION" | cut -d'x' -f2)
+
+LAUNCH_OPTIONS="-novid -nojoy -high -console -w $WIDTH -h $HEIGHT -fullscreen +r_dynamic 0 +fps_max $TARGET_REFRESH_RATE"
 
 if [ -z "$DISPLAY" ]; then
     echo "Not running in X11 environment. Exiting."
