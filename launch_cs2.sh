@@ -1,5 +1,4 @@
 #!/bin/bash
-# set -xe
 
 TARGET_RESOLUTION="1280x960"
 TARGET_REFRESH_RATE=165
@@ -21,7 +20,7 @@ notify-send "Game Notification" "CS2 is starting!" --icon=dialog-information
 steam -silent -vgui -applaunch $APP_ID $LAUNCH_OPTIONS &
 sleep 5
 
-while ! pgrep -x "$GAME_PROCESS_NAME" > /dev/null; do
+while ! GAME_PID=$(pgrep -x "$GAME_PROCESS_NAME"); do
     sleep 1
 done
 
@@ -42,8 +41,8 @@ fi
 echo "Setting mode $TARGET_MODE_NAME on $DISP_OUT..."
 xrandr --output $DISP_OUT --mode "$TARGET_MODE_NAME"
 
-while pgrep -x "$GAME_PROCESS_NAME" > /dev/null; do
-    sleep 1
+while kill -0 "$GAME_PID" 2> /dev/null; do
+    sleep 10
 done
 
 echo "CS2 process has ended."
