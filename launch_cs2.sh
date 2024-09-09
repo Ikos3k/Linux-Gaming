@@ -18,7 +18,6 @@ fi
 
 notify-send "Game Notification" "CS2 is starting!" --icon=dialog-information
 steam -silent -vgui -applaunch $APP_ID $LAUNCH_OPTIONS &
-sleep 5
 
 while ! GAME_PID=$(pgrep -x "$GAME_PROCESS_NAME"); do
     sleep 1
@@ -37,6 +36,9 @@ else
     xrandr --newmode "$TARGET_MODE_NAME" $TARGET_MODELINE
     xrandr --addmode $DISP_OUT "$TARGET_MODE_NAME"
 fi
+
+echo "Setting scaling mode to Full on $DISP_OUT..."
+xrandr --output $DISP_OUT --set "scaling mode" "Full"
 
 echo "Setting mode $TARGET_MODE_NAME on $DISP_OUT..."
 xrandr --output $DISP_OUT --mode "$TARGET_MODE_NAME"
