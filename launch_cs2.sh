@@ -1,10 +1,11 @@
 #!/bin/bash
+SILENT_MODE=true
+NOTIFICATIONS=false
 
 TARGET_RESOLUTION="1280x960"
 TARGET_REFRESH_RATE=165
 TARGET_SCALE_MODE="Default" # Options: Full, Aspect, Center, Default
-TARGET_FILTER="Default"     # Options: nearest, bilinear, default
-NOTIFICATIONS=0
+TARGET_FILTER="Default"     # Options: nearest, bilinear, Default
 
 GAME_PROCESS_NAME="cs2"
 APP_ID=730
@@ -13,6 +14,12 @@ WIDTH=$(echo "$TARGET_RESOLUTION" | cut -d'x' -f1)
 HEIGHT=$(echo "$TARGET_RESOLUTION" | cut -d'x' -f2)
 
 LAUNCH_OPTIONS="-novid -nojoy -high -console -noaafonts -nosync -noipx -freq $TARGET_REFRESH_RATE -refresh $TARGET_REFRESH_RATE -w $WIDTH -h $HEIGHT -fullscreen +fps_max $TARGET_REFRESH_RATE -forcenovsync"
+
+send_notification() {
+    if [ "$NOTIFICATIONS" = true ]; then
+        notify-send "Game Notification" "$1" --icon=dialog-information
+    fi
+}
 
 SESSION_TYPE="Unknown"
 if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
@@ -28,7 +35,7 @@ elif [ -n "$DISPLAY" ]; then
     SESSION_TYPE="X11"
     echo "X11 is in use."
     if command -v notify-send >/dev/null 2>&1; then
-        NOTIFICATIONS=1
+        NOTIFICATIONS=true
     fi
 else
     echo "Not supported environment."
@@ -37,11 +44,15 @@ fi
 
 echo "Session type: $SESSION_TYPE"
 
-if [ "$NOTIFICATIONS" -eq 1 ]; then
-    notify-send "Game Notification" "CS2 is starting!" --icon=dialog-information
-fi
+send_notification "CS2 is starting!"
 
-steam -silent -vgui -applaunch $APP_ID $LAUNCH_OPTIONS &
+if [ "$SILENT_MODE" = true ]; then
+    echo "Launching Steam in silent mode..."
+    steam -silent -vgui -applaunch $APP_ID $LAUNCH_OPTIONS > /dev/null 2>&1 &
+else
+    echo "Launching Steam with logging..."
+    steam -silent -vgui -applaunch $APP_ID $LAUNCH_OPTIONS &
+fi
 
 while ! GAME_PID=$(pgrep -x "$GAME_PROCESS_NAME"); do
     sleep 1
@@ -98,7 +109,5 @@ elif [ "$SESSION_TYPE" == "X11" ]; then
     xrandr --output $DISP_OUT --mode $CURRENT_RESOLUTION --rate 60
 fi
 
-if [ "$NOTIFICATIONS" -eq 1 ]; then
-    sleep 5
-    notify-send "Game Notification" "CS2 has closed!" --icon=dialog-information
-fi
+sleep 5
+send_notification "CS2 has closed!"
