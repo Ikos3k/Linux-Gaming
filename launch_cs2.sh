@@ -1,4 +1,5 @@
-#!/bin/bash
+#!/bin/sh
+
 SILENT_MODE=true
 NOTIFICATIONS=false
 
@@ -22,7 +23,7 @@ send_notification() {
 }
 
 SESSION_TYPE="Unknown"
-if [ "$XDG_SESSION_TYPE" == "wayland" ]; then
+if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
     SESSION_TYPE="Wayland"
     if pgrep -x "sway" > /dev/null; then
         echo "Sway (Wayland) is in use."
@@ -60,12 +61,12 @@ done
 
 echo "CS2 process detected. Waiting for it to end..."
 
-if [ "$SESSION_TYPE" == "Wayland_Sway" ]; then
+if [ "$SESSION_TYPE" = "Wayland_Sway" ]; then
     DISP_OUT=$(swaymsg -t get_outputs | jq -r '.[] | select(.active == true) | .name')
     CURRENT_RESOLUTION=$(swaymsg -t get_outputs | jq -r --arg DISP "$DISP_OUT" '.[] | select(.name == $DISP) | "\(.current_mode.width)x\(.current_mode.height)"')
     echo "Adding custom mode $TARGET_RESOLUTION@$TARGET_REFRESH_RATE on $DISP_OUT..."
     swaymsg -- output $DISP_OUT mode --custom $TARGET_RESOLUTION@$TARGET_REFRESH_RATE"Hz"
-elif [ "$SESSION_TYPE" == "X11" ]; then
+elif [ "$SESSION_TYPE" = "X11" ]; then
     DISP_OUT=$(xrandr | grep " connected" | awk '{print $1}')
     CURRENT_RESOLUTION=$(xrandr | grep -A1 "^$DISP_OUT connected" | tail -n1 | awk '{ print $1 }')
     TARGET_MODE_NAME="${TARGET_RESOLUTION}_${TARGET_REFRESH_RATE}.00"
@@ -103,9 +104,9 @@ done
 
 echo "CS2 process has ended."
 echo "Restoring original res $CURRENT_RESOLUTION on $DISP_OUT..."
-if [ "$SESSION_TYPE" == "Wayland_Sway" ]; then
+if [ "$SESSION_TYPE" = "Wayland_Sway" ]; then
     swaymsg -- output $DISP_OUT mode $CURRENT_RESOLUTION
-elif [ "$SESSION_TYPE" == "X11" ]; then
+elif [ "$SESSION_TYPE" = "X11" ]; then
     xrandr --output $DISP_OUT --mode $CURRENT_RESOLUTION --rate 60
 fi
 
